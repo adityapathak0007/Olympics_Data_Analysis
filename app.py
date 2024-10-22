@@ -66,7 +66,6 @@ def preprocess(df, region_df):
 df, region_df = load_data()
 df = preprocess(df, region_df)
 
-
 # Sidebar and Layout
 st.sidebar.title("Olympics Analysis")
 user_menu = st.sidebar.radio(
@@ -130,11 +129,11 @@ if user_menu == 'Medal Tally':
 
 # Overall Analysis Section
 if user_menu == 'Overall Analysis':
-    editions = df['year'].unique().shape[0] - 1
-    cities = df['city'].unique().shape[0]
-    sports = df['sport'].unique().shape[0]
-    events = df['event'].unique().shape[0]
-    athletes = df['name'].unique().shape[0]
+    editions = df['Year'].unique().shape[0] - 1
+    cities = df['City'].unique().shape[0]
+    sports = df['Sport'].unique().shape[0]
+    events = df['Event'].unique().shape[0]
+    athletes = df['Name'].unique().shape[0]
     nations = df['region'].unique().shape[0]
 
     st.markdown('<div class="main-title">Top Statistics</div>', unsafe_allow_html=True)
@@ -170,21 +169,21 @@ if user_menu == 'Overall Analysis':
 
     # Events over time
     st.markdown('<div class="section-header">Events Over Time</div>', unsafe_allow_html=True)
-    events_over_time = helper.data_over_time(df, 'event')
-    fig = px.line(events_over_time, x='Edition', y='event', title="Events Over the Years")
+    events_over_time = helper.data_over_time(df, 'Event')
+    fig = px.line(events_over_time, x='Edition', y='Event', title="Events Over the Years")
     st.plotly_chart(fig)
 
     # Number of Events over Time (Every Sport) - Heatmap
     st.markdown('<div class="section-header">Number of Events over Time (Every Sport)</div>', unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(20, 20))
-    x = df.drop_duplicates(subset=['year', 'sport', 'event'])
-    pivot_table = x.pivot_table(index='sport', columns='year', values='event', aggfunc='count').fillna(0).astype(int)
+    x = df.drop_duplicates(subset=['Year', 'Sport', 'Event'])
+    pivot_table = x.pivot_table(index='Sport', columns='Year', values='Event', aggfunc='count').fillna(0).astype(int)
     sns.heatmap(pivot_table, annot=True, fmt="d", cmap="YlOrBr", linewidths=0.5, ax=ax)
     st.pyplot(fig)
 
     # Most Successful Athletes
     st.markdown('<div class="section-header">Most Successful Athletes</div>', unsafe_allow_html=True)
-    sport_list = df['sport'].unique().tolist()
+    sport_list = df['Sport'].unique().tolist()
     sport_list.sort()
     sport_list.insert(0, 'Overall')
     selected_sport = st.selectbox('Select a Sport', sport_list)
