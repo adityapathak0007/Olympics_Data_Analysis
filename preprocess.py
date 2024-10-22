@@ -6,8 +6,24 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.figure_factory as ff
 
-df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\athlete_events.csv")
-region_df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\noc_regions.csv")
+# Google Drive file URLs
+athlete_events_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
+region_df_url = 'https://drive.google.com/uc?id=YOUR_REGION_CSV_FILE_ID'
+
+# Download and load CSV data
+@st.cache_data
+def load_data():
+    gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
+    gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
+    
+    # Try loading with different configurations
+    try:
+        df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
+        region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
+    except pd.errors.ParserError:
+        st.error("Error reading the CSV file. Please check the format.")
+    
+    return df, region_df
 
 '''
 print(df.head())
