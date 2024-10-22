@@ -6,6 +6,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.figure_factory as ff
+import gdown
 
 # Load Data
 df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\athlete_events.csv")
