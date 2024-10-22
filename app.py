@@ -6,10 +6,20 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.figure_factory as ff
+import gdown
+
+
+# Google Drive file URLs
+athlete_events_url = 'https://drive.google.com/uc?id=1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr'
+region_df_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
+
+# Download the CSV files from Google Drive
+gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
+gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
 
 # Load Data
-df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\athlete_events.csv")
-region_df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\noc_regions.csv")
+df = pd.read_csv("athlete_events.csv")
+region_df = pd.read_csv("noc_regions.csv")
 
 df = preprocessor.preprocess(df, region_df)
 
