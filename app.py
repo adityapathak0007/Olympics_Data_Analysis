@@ -9,6 +9,7 @@ import plotly.figure_factory as ff
 import gdown
 
 
+
 # Google Drive file URLs
 athlete_events_url = 'https://drive.google.com/file/d/1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr/view?usp=sharing'
 region_df_url = 'https://drive.google.com/file/d/11fbDnfL18kcPHX36p9aLz_opAqoYeK_s/view?usp=sharing'
@@ -19,7 +20,6 @@ def load_data():
     gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
     gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
     
-    # Try loading with different configurations
     try:
         df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
         region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
@@ -28,9 +28,21 @@ def load_data():
     
     return df, region_df
 
-df, region_df = load_data()
+# Preprocess function
+def preprocess(df, region_df):
+    # filtering for summer olympics
+    df = df[df['Season'] == 'Summer']
+    # merge with region_df
+    df = df.merge(region_df, on='NOC', how='left')
+    # dropping duplicates
+    df.drop_duplicates(inplace=True)
+    # one hot encoding medals
+    df = pd.concat([df, pd.get_dummies(df['Medal'])], axis=1)
+    return df
 
-df = preprocessor.preprocess(df, region_df)
+df, region_df = load_data()
+df = preprocess(df, region_df)
+
 
 # Sidebar and Layout
 st.sidebar.title("Olympics Analysis")
