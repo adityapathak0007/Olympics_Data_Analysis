@@ -10,8 +10,8 @@ import gdown
 
 
 # Google Drive file URLs
-athlete_events_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
-region_df_url = 'https://drive.google.com/uc?id=YOUR_REGION_CSV_FILE_ID'
+athlete_events_url = 'https://drive.google.com/file/d/1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr/view?usp=sharing'
+region_df_url = 'https://drive.google.com/file/d/11fbDnfL18kcPHX36p9aLz_opAqoYeK_s/view?usp=sharing'
 
 # Download and load CSV data
 @st.cache_data
