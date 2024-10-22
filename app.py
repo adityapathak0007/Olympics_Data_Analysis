@@ -10,22 +10,25 @@ import gdown
 
 
 # Google Drive file URLs
-athlete_events_url = 'https://drive.google.com/file/d/1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr/view?usp=drive_link'
-region_df_url = 'https://drive.google.com/file/d/11fbDnfL18kcPHX36p9aLz_opAqoYeK_s/view?usp=drive_link'
+athlete_events_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
+region_df_url = 'https://drive.google.com/uc?id=YOUR_REGION_CSV_FILE_ID'
 
 # Download and load CSV data
 @st.cache_data
 def load_data():
     gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
     gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
-    df = pd.read_csv('athlete_events.csv')
-    region_df = pd.read_csv('noc_regions.csv')
+    
+    # Try loading with different configurations
+    try:
+        df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
+        region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
+    except pd.errors.ParserError:
+        st.error("Error reading the CSV file. Please check the format.")
+    
     return df, region_df
 
 df, region_df = load_data()
-
-# Preprocess the data
-df = preprocessor.preprocess(df, region_df)
 
 df = preprocessor.preprocess(df, region_df)
 
