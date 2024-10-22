@@ -9,44 +9,6 @@ import plotly.figure_factory as ff
 import gdown
 
 
-def load_data():
-    # Load the data from Google Drive
-    url = "https://drive.google.com/uc?id=1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr"
-    output = 'athlete_events.csv'
-    gdown.download(url, output, quiet=False)
-    
-    df = pd.read_csv(output, error_bad_lines=False)
-    region_df = pd.read_csv('noc_regions.csv')
-    
-    # Debugging: Print column names
-    st.write("Columns in athlete data:", df.columns)
-    
-    # Debugging: Check for 'Season' column
-    if 'Season' not in df.columns:
-        st.error("'Season' column is missing!")
-    
-    return df, region_df
-
-def preprocess(df, region_df):
-    # Strip whitespace from column names to avoid issues with hidden spaces
-    df.columns = df.columns.str.strip()
-    
-    # Debugging: Show unique values in the 'Season' column
-    st.write("Unique values in 'Season' column before filtering:", df['Season'].unique())
-    
-    # Filtering for Summer Olympics
-    df = df[df['Season'] == 'Summer']
-    
-    # Merge with region_df
-    df = df.merge(region_df, on='NOC', how='left')
-    
-    # Dropping duplicates
-    df.drop_duplicates(inplace=True)
-    
-    # One hot encoding medals
-    df = pd.concat([df, pd.get_dummies(df['Medal'])], axis=1)
-    
-    return df
 
 # Google Drive file URLs
 athlete_events_url = 'https://drive.google.com/file/d/1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr/view?usp=sharing'
