@@ -29,32 +29,34 @@ def load_data():
         df.columns = df.columns.str.strip().str.lower()
         region_df.columns = region_df.columns.str.strip().str.lower()
 
-        # Debug: Print cleaned column names
+        # Debug: Print cleaned column names for verification
         st.write("Cleaned columns in athlete_events.csv:", df.columns)
+        st.write("Cleaned columns in noc_regions.csv:", region_df.columns)
 
-        # Show the first few rows to ensure the data is correct
+        # Show a preview of the first few rows
         st.write("Preview of athlete_events.csv:", df.head())
+        st.write("Preview of noc_regions.csv:", region_df.head())
 
-    except pd.errors.ParserError:
-        st.error("Error reading the CSV file. Please check the format.")
+    except pd.errors.ParserError as e:
+        st.error(f"Error reading the CSV file: {e}")
+        st.stop()
     
     return df, region_df
 
 
 # Preprocess function
 def preprocess(df, region_df):
-    # Clean column names again to ensure consistency
+    # Ensure column names are consistent
     df.columns = df.columns.str.strip().str.lower()
     region_df.columns = region_df.columns.str.strip().str.lower()
 
-    # List of columns to check for KeyError and handle it
+    # List of required columns and handle missing columns
     required_columns = ['year', 'season', 'city', 'sport', 'event', 'name', 'noc', 'medal', 'age', 'sex', 'weight', 'height']
 
-    # Check for missing columns and show an error if any are missing
-    for col in required_columns:
-        if col not in df.columns:
-            st.error(f"Error: '{col}' column not found in the dataset.")
-            st.stop()
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        st.error(f"Error: The following columns are missing in the dataset: {missing_columns}")
+        st.stop()
 
     # Filter for Summer Olympics
     df = df[df['season'] == 'summer']
@@ -74,6 +76,7 @@ def preprocess(df, region_df):
 # Main code execution
 df, region_df = load_data()
 df = preprocess(df, region_df)
+
 
 
 # Sidebar and Layout
