@@ -10,6 +10,7 @@ import gdown
 
 
 
+
 # Google Drive file URLs
 athlete_events_url = 'https://drive.google.com/uc?id=1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr'
 region_df_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
@@ -21,38 +22,40 @@ def load_data():
     gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
     gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
 
-    # Try to load CSV data
     try:
+        # Load CSV data
         df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
         region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
 
-        # Debug: Check if files are loaded correctly
-        st.write("Data loaded successfully. Columns in athlete_events:", df.columns)
-        st.write("Data loaded successfully. Columns in region_df:", region_df.columns)
+        # Debug: Print column names to verify that 'Year' exists
+        st.write("Columns in athlete_events.csv:", df.columns)
+
+        # Show the first few rows to ensure the data is correct
+        st.write("Preview of athlete_events.csv:", df.head())
 
     except pd.errors.ParserError:
         st.error("Error reading the CSV file. Please check the format.")
     
     return df, region_df
 
-# Preprocess function with extra logging
+# Preprocess function
 def preprocess(df, region_df):
-    # Strip whitespaces and lowercase column names
+    # Clean column names by stripping spaces and converting to lowercase
     df.columns = df.columns.str.strip().str.lower()
     region_df.columns = region_df.columns.str.strip().str.lower()
-    
-    # Debug: Check if 'season' column exists
-    if 'season' not in df.columns:
-        st.error("Error: 'Season' column not found in the dataset.")
+
+    # Debug: Check if 'year' column exists
+    if 'year' not in df.columns:
+        st.error("Error: 'Year' column not found in the dataset.")
         st.stop()
 
-    # Debug: Print unique values in 'season' column
-    st.write("Unique values in 'season' column:", df['season'].unique())
+    # Debug: Print unique values in 'year' column
+    st.write("Unique values in 'year' column:", df['year'].unique())
 
-    # Filter for summer olympics
+    # Filter for Summer Olympics
     df = df[df['season'] == 'summer']
-    
-    # Merge with region_df
+
+    # Merge with region data
     df = df.merge(region_df, on='noc', how='left')
 
     # Drop duplicates
@@ -60,8 +63,10 @@ def preprocess(df, region_df):
 
     # One hot encoding for medals
     df = pd.concat([df, pd.get_dummies(df['medal'])], axis=1)
-    
+
     return df
+
+
 
 # Main code execution
 df, region_df = load_data()
