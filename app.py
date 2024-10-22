@@ -36,30 +36,30 @@ def load_data():
 
 # Preprocess function with extra logging
 def preprocess(df, region_df):
-    # Strip whitespaces and lowercase column names
     df.columns = df.columns.str.strip().str.lower()
     region_df.columns = region_df.columns.str.strip().str.lower()
     
-    # Debug: Check if 'season' column exists
     if 'season' not in df.columns:
-        st.error("Error: 'Season' column not found in the dataset.")
+        st.error("Error: 'season' column not found in the dataset.")
         st.stop()
+    
+    # Check for other required columns
+    required_columns = ['noc', 'medal', 'year']
+    for col in required_columns:
+        if col not in df.columns:
+            st.error(f"Error: '{col}' column not found in the dataset.")
+            st.stop()
 
-    # Debug: Print unique values in 'season' column
-    st.write("Unique values in 'season' column:", df['season'].unique())
-
-    # Filter for summer olympics
     df = df[df['season'] == 'summer']
     
-    # Merge with region_df
-    df = df.merge(region_df, on='noc', how='left')
-
-    # Drop duplicates
-    df.drop_duplicates(inplace=True)
-
-    # One hot encoding for medals
-    df = pd.concat([df, pd.get_dummies(df['medal'])], axis=1)
+    # Check if data is empty after filtering
+    if df.empty:
+        st.error("No data found for Summer Olympics.")
+        st.stop()
     
+    df = df.merge(region_df, on='noc', how='left').drop_duplicates()
+    df = pd.concat([df, pd.get_dummies(df['medal'], prefix='medal', dummy_na=True)], axis=1)
+
     return df
 
 # Main code execution
