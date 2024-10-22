@@ -20,48 +20,38 @@ def load_data():
     gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
     gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
 
+    # Try to load CSV data
     try:
-        # Load CSV data
         df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
         region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
 
-        # Clean column names by stripping spaces and converting to lowercase
-        df.columns = df.columns.str.strip().str.lower()
-        region_df.columns = region_df.columns.str.strip().str.lower()
+        # Debug: Check if files are loaded correctly
+        st.write("Data loaded successfully. Columns in athlete_events:", df.columns)
+        st.write("Data loaded successfully. Columns in region_df:", region_df.columns)
 
-        # Debug: Print cleaned column names for verification
-        st.write("Cleaned columns in athlete_events.csv:", df.columns)
-        st.write("Cleaned columns in noc_regions.csv:", region_df.columns)
-
-        # Show a preview of the first few rows
-        st.write("Preview of athlete_events.csv:", df.head())
-        st.write("Preview of noc_regions.csv:", region_df.head())
-
-    except pd.errors.ParserError as e:
-        st.error(f"Error reading the CSV file: {e}")
-        st.stop()
+    except pd.errors.ParserError:
+        st.error("Error reading the CSV file. Please check the format.")
     
     return df, region_df
 
-
-# Preprocess function
+# Preprocess function with extra logging
 def preprocess(df, region_df):
-    # Ensure column names are consistent
+    # Strip whitespaces and lowercase column names
     df.columns = df.columns.str.strip().str.lower()
     region_df.columns = region_df.columns.str.strip().str.lower()
-
-    # List of required columns and handle missing columns
-    required_columns = ['year', 'season', 'city', 'sport', 'event', 'name', 'noc', 'medal', 'age', 'sex', 'weight', 'height']
-
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        st.error(f"Error: The following columns are missing in the dataset: {missing_columns}")
+    
+    # Debug: Check if 'season' column exists
+    if 'season' not in df.columns:
+        st.error("Error: 'Season' column not found in the dataset.")
         st.stop()
 
-    # Filter for Summer Olympics
-    df = df[df['season'] == 'summer']
+    # Debug: Print unique values in 'season' column
+    st.write("Unique values in 'season' column:", df['season'].unique())
 
-    # Merge with region data
+    # Filter for summer olympics
+    df = df[df['season'] == 'summer']
+    
+    # Merge with region_df
     df = df.merge(region_df, on='noc', how='left')
 
     # Drop duplicates
@@ -69,14 +59,12 @@ def preprocess(df, region_df):
 
     # One hot encoding for medals
     df = pd.concat([df, pd.get_dummies(df['medal'])], axis=1)
-
+    
     return df
-
 
 # Main code execution
 df, region_df = load_data()
 df = preprocess(df, region_df)
-
 
 
 # Sidebar and Layout
