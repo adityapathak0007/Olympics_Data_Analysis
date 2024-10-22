@@ -6,65 +6,12 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.figure_factory as ff
-import gdown
 
+# Load Data
+df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\athlete_events.csv")
+region_df = pd.read_csv("D:\\Aditya's Notes\\All Projects\\Olympics Analysis\\noc_regions.csv")
 
-# Google Drive file URLs
-athlete_events_url = 'https://drive.google.com/uc?id=1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr'
-region_df_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
-
-# Download and load CSV data
-@st.cache_data
-def load_data():
-    # Download the CSV files
-    gdown.download(athlete_events_url, 'athlete_events.csv', quiet=False)
-    gdown.download(region_df_url, 'noc_regions.csv', quiet=False)
-
-    # Try to load CSV data
-    try:
-        df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
-        region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
-
-        # Debug: Check if files are loaded correctly
-        st.write("Data loaded successfully. Columns in athlete_events:", df.columns)
-        st.write("Data loaded successfully. Columns in region_df:", region_df.columns)
-
-    except pd.errors.ParserError:
-        st.error("Error reading the CSV file. Please check the format.")
-    
-    return df, region_df
-
-# Preprocess function with extra logging
-def preprocess(df, region_df):
-    df.columns = df.columns.str.strip().str.lower()
-    region_df.columns = region_df.columns.str.strip().str.lower()
-    
-    if 'season' not in df.columns:
-        st.error("Error: 'season' column not found in the dataset.")
-        st.stop()
-    
-    # Check for other required columns
-    required_columns = ['noc', 'medal', 'year']
-    for col in required_columns:
-        if col not in df.columns:
-            st.error(f"Error: '{col}' column not found in the dataset.")
-            st.stop()
-
-    df = df[df['season'] == 'summer']
-    
-    # Check if data is empty after filtering
-    if df.empty:
-        st.error("No data found for Summer Olympics.")
-        st.stop()
-    
-    df = df.merge(region_df, on='noc', how='left').drop_duplicates()
-    df = pd.concat([df, pd.get_dummies(df['medal'], prefix='medal', dummy_na=True)], axis=1)
-
-    return df
-
-# Main code execution
-df, region_df = load_data()
-df = preprocess(df, region_df)
+df = preprocessor.preprocess(df, region_df)
 
 # Sidebar and Layout
 st.sidebar.title("Olympics Analysis")
