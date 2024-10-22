@@ -9,8 +9,6 @@ import plotly.figure_factory as ff
 import gdown
 
 
-
-
 # Google Drive file URLs
 athlete_events_url = 'https://drive.google.com/uc?id=1WDMrZ0Steqk2lcbf9gYa70Iy8ub1Laxr'
 region_df_url = 'https://drive.google.com/uc?id=11fbDnfL18kcPHX36p9aLz_opAqoYeK_s'
@@ -27,8 +25,12 @@ def load_data():
         df = pd.read_csv('athlete_events.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
         region_df = pd.read_csv('noc_regions.csv', sep=',', on_bad_lines='skip', encoding='utf-8')
 
-        # Debug: Print column names to verify that 'Year' exists
-        st.write("Columns in athlete_events.csv:", df.columns)
+        # Clean column names by stripping spaces and converting to lowercase
+        df.columns = df.columns.str.strip().str.lower()
+        region_df.columns = region_df.columns.str.strip().str.lower()
+
+        # Debug: Print cleaned column names
+        st.write("Cleaned columns in athlete_events.csv:", df.columns)
 
         # Show the first few rows to ensure the data is correct
         st.write("Preview of athlete_events.csv:", df.head())
@@ -38,19 +40,21 @@ def load_data():
     
     return df, region_df
 
+
 # Preprocess function
 def preprocess(df, region_df):
-    # Clean column names by stripping spaces and converting to lowercase
+    # Clean column names again to ensure consistency
     df.columns = df.columns.str.strip().str.lower()
     region_df.columns = region_df.columns.str.strip().str.lower()
 
-    # Debug: Check if 'year' column exists
-    if 'year' not in df.columns:
-        st.error("Error: 'Year' column not found in the dataset.")
-        st.stop()
+    # List of columns to check for KeyError and handle it
+    required_columns = ['year', 'season', 'city', 'sport', 'event', 'name', 'noc', 'medal', 'age', 'sex', 'weight', 'height']
 
-    # Debug: Print unique values in 'year' column
-    st.write("Unique values in 'year' column:", df['year'].unique())
+    # Check for missing columns and show an error if any are missing
+    for col in required_columns:
+        if col not in df.columns:
+            st.error(f"Error: '{col}' column not found in the dataset.")
+            st.stop()
 
     # Filter for Summer Olympics
     df = df[df['season'] == 'summer']
@@ -67,11 +71,9 @@ def preprocess(df, region_df):
     return df
 
 
-
 # Main code execution
 df, region_df = load_data()
 df = preprocess(df, region_df)
-
 
 
 # Sidebar and Layout
@@ -137,11 +139,11 @@ if user_menu == 'Medal Tally':
 
 # Overall Analysis Section
 if user_menu == 'Overall Analysis':
-    editions = df['Year'].unique().shape[0] - 1
-    cities = df['City'].unique().shape[0]
-    sports = df['Sport'].unique().shape[0]
-    events = df['Event'].unique().shape[0]
-    athletes = df['Name'].unique().shape[0]
+    editions = df['year'].unique().shape[0] - 1
+    cities = df['city'].unique().shape[0]
+    sports = df['sport'].unique().shape[0]
+    events = df['event'].unique().shape[0]
+    athletes = df['name'].unique().shape[0]
     nations = df['region'].unique().shape[0]
 
     st.markdown('<div class="main-title">Top Statistics</div>', unsafe_allow_html=True)
@@ -177,21 +179,21 @@ if user_menu == 'Overall Analysis':
 
     # Events over time
     st.markdown('<div class="section-header">Events Over Time</div>', unsafe_allow_html=True)
-    events_over_time = helper.data_over_time(df, 'Event')
-    fig = px.line(events_over_time, x='Edition', y='Event', title="Events Over the Years")
+    events_over_time = helper.data_over_time(df, 'event')
+    fig = px.line(events_over_time, x='Edition', y='event', title="Events Over the Years")
     st.plotly_chart(fig)
 
     # Number of Events over Time (Every Sport) - Heatmap
     st.markdown('<div class="section-header">Number of Events over Time (Every Sport)</div>', unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(20, 20))
-    x = df.drop_duplicates(subset=['Year', 'Sport', 'Event'])
-    pivot_table = x.pivot_table(index='Sport', columns='Year', values='Event', aggfunc='count').fillna(0).astype(int)
+    x = df.drop_duplicates(subset=['year', 'sport', 'event'])
+    pivot_table = x.pivot_table(index='sport', columns='year', values='event', aggfunc='count').fillna(0).astype(int)
     sns.heatmap(pivot_table, annot=True, fmt="d", cmap="YlOrBr", linewidths=0.5, ax=ax)
     st.pyplot(fig)
 
     # Most Successful Athletes
     st.markdown('<div class="section-header">Most Successful Athletes</div>', unsafe_allow_html=True)
-    sport_list = df['Sport'].unique().tolist()
+    sport_list = df['sport'].unique().tolist()
     sport_list.sort()
     sport_list.insert(0, 'Overall')
     selected_sport = st.selectbox('Select a Sport', sport_list)
